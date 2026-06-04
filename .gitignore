@@ -1,0 +1,47 @@
+# === Python Cache & Compiled Files ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.elc
+.ipynb_checkpoints/
+
+# === Virtual Environments (Venv) ===
+# Memblokir folder environment lokal agar tidak memberatkan repository GitHub
+venv/
+.venv/
+env/
+.env/
+ENV/
+bin/
+lib/
+include/
+
+# === Streamlit Configuration & Cache ===
+.streamlit/config.toml
+.streamlit/secrets.toml
+# Jika kamu menyimpan file rahasia/credentials Streamlit secara lokal:
+secrets.toml
+
+# === OS Generated Files ===
+.DS_Store
+.DS_Store?
+ehthumbs.db
+Icon?
+Thumbs.db
+
+# === IDE & Text Editors Config ===
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# === Machine Learning Models & Large Datasets (Optional but Recommended) ===
+# Folder saved_model atau checkpoint lokal berukuran besar sebaiknya di-ignore 
+# jika kamu sudah meng-deploy model di server terpisah atau mengaturnya via Git LFS.
+# models/saved_model/
+# *.keras
+# *.h5
+# *.pkl
