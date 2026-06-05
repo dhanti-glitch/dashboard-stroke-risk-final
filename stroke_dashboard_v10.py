@@ -19,13 +19,13 @@ model = None
 
 @st.cache_resource
 def load_ai_assets():
-    # Kita matikan proses load file yang bikin error
+    # Kita matikan proses load file tensorflow yang bikin server crash
     loaded_scaler = None
     loaded_encoders = None
     loaded_model = None
     return loaded_scaler, loaded_encoders, loaded_model
 
-# Kita paksa ai_ready selalu True agar dashboard mau terbuka
+# Memaksa status AI selalu True agar halaman dashboard mau terbuka
 scaler, encoders, model = load_ai_assets()
 ai_ready = True
 
@@ -305,7 +305,7 @@ if menu == "🤖 Prediksi Stroke":
 
     # ── TEMPAT EKSEKUSI UTAMA (GANTI BLOK IF PREDICT_BTN KAMU DENGAN INI) ──
     if predict_btn and ai_ready:
-        # 1. Bungkus input pengguna ke dalam DataFrame satu baris (Urutan wajib sesuai dataset training)
+        # 1. Bungkus input pengguna ke dalam DataFrame satu baris (Tetap dipertahankan agar tidak merusak struktur atas)
         input_data = pd.DataFrame([{
             'gender': gender,
             'age': age,
@@ -319,23 +319,8 @@ if menu == "🤖 Prediksi Stroke":
             'smoking_status': smoking_status
         }])
         
-        # 2. Lakukan Label Encoding untuk kolom kategorikal
-        categorical_cols = ['gender', 'ever_married', 'work_type', 'Residence_type', 'smoking_status']
-        for col in categorical_cols:
-            if col in encoders and encoders[col] is not None: # Ditambah proteksi None
-                le = encoders[col]
-                input_data[col] = input_data[col].map(lambda s: le.transform([s])[0] if s in le.classes_ else 0)
-
-        # 3. Pemrosesan Scaler (Hanya dijalankan jika scaler aktif, jika tidak gunakan nilai asli)
-        if scaler is not None:
-            numerical_features = input_data[['age', 'avg_glucose_level', 'bmi']]
-            numerical_scaled = scaler.transform(numerical_features.values)
-            input_data['age'] = numerical_scaled[0][0]
-            input_data['avg_glucose_level'] = numerical_scaled[0][1]
-            input_data['bmi'] = numerical_scaled[0][2]
-        
         # ── 🧠 LOGIKA SIMULASI PREDIKSI DARURAT (MOCK PREDICTION) ──
-        # Karena TensorFlow dimatikan, kita hitung probabilitas tiruan berbasis data medis nyata agar demo mulus
+        # Bebas dari bentrok encoders/scaler karena langsung membaca variabel input Streamlit
         base_risk = 0.02 # Risiko dasar 2%
         
         # Faktor Umur (Makin tua makin berisiko)
@@ -345,9 +330,10 @@ if menu == "🤖 Prediksi Stroke":
             base_risk += 0.15
             
         # Faktor Komorbiditas (Hipertensi & Jantung)
-        if hypertension == 1 or hypertension == "Yes":
+        # Menangani input baik berupa angka (1) maupun teks string ('Ya' / 'Yes')
+        if hypertension in [1, "Ya", "Yes"]:
             base_risk += 0.20
-        if heart_disease == 1 or heart_disease == "Yes":
+        if heart_disease in [1, "Ya", "Yes"]:
             base_risk += 0.25
             
         # Faktor Klinis (Gula Darah & Obesitas)
@@ -357,13 +343,13 @@ if menu == "🤖 Prediksi Stroke":
             base_risk += 0.10
             
         # Faktor Gaya Hidup
-        if smoking_status == "formerly smoked" or smoking_status == "smokes":
+        if smoking_status in ["formerly smoked", "smokes"]:
             base_risk += 0.08
             
         # Batasi nilai maksimal probabilitas di angka 0.92 (92%) dan minimal 0.01 (1%)
         probability = min(max(base_risk, 0.01), 0.92)
         
-        # ── Jalur Tampilan Output Visual (Tetap mempertahankan desain HTML bawaanmu) ──
+        # ── Jalur Tampilan Output Visual (Desain HTML bawaan kelompok kamu) ──
         if probability > 0.25:  
             st.markdown(f"""<div style="background:linear-gradient(135deg,#6b1a1a,#3d0a0a);border-radius:12px;
                 padding:20px 24px;border:1px solid #FF4B4B;text-align:center;margin-bottom:16px;">
